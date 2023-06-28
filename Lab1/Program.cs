@@ -1,41 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 
-// Singleton, Strategy och Observermönster
+// Singleton, Strategy, and Observer patterns
 
-// Definiera ett gränssnitt för att placera skepp
-// Strategy-mönster
+// Define an interface for ship placement
+// Strategy pattern
 public interface IShipPlacementStrategy
 {
     void PlaceShips(Board board, Ship[] ships);
 }
 
-// Implementation av gränssnittet IShipPlacementStrategy som slumpmässigt placerar skepp
+// Implementation of the IShipPlacementStrategy interface that randomly places ships
 public class RandomShipPlacementStrategy : IShipPlacementStrategy
 {
     private static readonly Random _random = new Random();
 
     public void PlaceShips(Board board, Ship[] ships)
     {
-        // Placera varje skepp på brädet
+        // Place each ship on the board
         foreach (var ship in ships)
         {
             bool isPlaced = false;
 
-            // Fortsätt försöka placera skeppet tills det är placerat
+            // Keep trying to place the ship until it is placed
             while (!isPlaced)
             {
-                // Generera slumpmässiga koordinater och orientering för skeppet
+                // Generate random coordinates and orientation for the ship
                 int row = _random.Next(0, board.Rows);
                 int column = _random.Next(0, board.Columns);
                 bool isVertical = _random.Next(0, 2) == 0;
 
-                // Kontrollera om skeppet kan placeras på dessa koordinater
+                // Check if the ship can be placed at these coordinates
                 if (board.CanPlaceShip(ship, row, column, isVertical))
                 {
                     isPlaced = true;
 
-                    // Placera skeppet på brädet
+                    // Place the ship on the board
                     for (int i = 0; i < ship.Length; i++)
                     {
                         if (isVertical)
@@ -57,57 +57,57 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Välkomstmeddelande
-        Console.WriteLine("Welcome to World War II, its time to bombs some boats!");
+        // Welcome message
+        Console.WriteLine("Welcome to World War II, it's time to bomb some boats!");
         Console.WriteLine("------------------------------------------------------");
         Console.WriteLine("Press any button to start the game!");
         Console.ReadKey();
 
-        // Skapa ett bräde med slumpmässig skeppplacering
+        // Create a board with random ship placement
         var board = Board.GetInstance(7, 7, new RandomShipPlacementStrategy());
         board.Initialize();
 
-        // Skapa en observatör för skeppssänkningar och lägg till den i brädet
+        // Create an observer for ship sink notifications and add it to the board
         var shipSunkObserver = new ShipSunkObserver();
         board.AddObserver(shipSunkObserver);
 
-        // Placera skeppen på brädet
+        // Place the ships on the board
         board.PlaceShips();
 
-        // Spelloop tills spelet är över
+        // Game loop until the game is over
         while (!board.IsGameOver())
         {
-            // Rensa konsolen och skriv ut brädet
+            // Clear the console and print the board
             Console.Clear();
             board.Print();
 
-            // Läs in användarens input för att ange koordinater att attackera
-            Console.WriteLine("Enter coordinates (for example, A1): ");
+            // Read user input for entering coordinates to attack
+            Console.WriteLine("Enter coordinates (e.g., A1): ");
             string input = Console.ReadLine().ToUpper();
 
             bool isValidInput = board.IsValidInput(input);
             bool isHit = false;
 
-            // Om input är giltig, utför attacken
+            // If the input is valid, perform the attack
             if (isValidInput)
             {
                 isHit = board.Attack(input);
             }
 
-            // Skriv ut resultatet av attacken
+            // Print the result of the attack
             Console.WriteLine(isValidInput ? (isHit ? "Hit!" : "Miss!") : "Invalid input!");
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
         }
 
-        // Spelet är över, skriv ut slutresultatet
+        // The game is over, print the final result
         Console.Clear();
         board.Print();
         Console.WriteLine("Game Over!");
     }
 }
 
-// Klassen som representerar ett skepp
+// The class that represents a ship
 public class Ship
 {
     public string Name { get; }
@@ -121,21 +121,21 @@ public class Ship
     }
 }
 
-// Klassen som representerar en cell på brädet
+// The class that represents a cell on the board
 public class Cell
 {
     public bool IsHit { get; set; }
     public Ship? Ship { get; set; }
 }
 
-// Gränssnitt för en observatör
-// Observer-mönster
+// Interface for an observer
+// Observer pattern
 public interface IObserver
 {
     void Notify(string message);
 }
 
-// Observatör som skriver ut meddelanden när skepp sänks
+// Observer that writes messages when a ship is sunk
 public class ShipSunkObserver : IObserver
 {
     public void Notify(string message)
@@ -144,7 +144,7 @@ public class ShipSunkObserver : IObserver
     }
 }
 
-// Klassen som representerar brädet
+// The class that represents the board
 public class Board
 {
     private readonly int _rows;
@@ -162,7 +162,7 @@ public class Board
     public int Columns => _columns;
     public Cell[,] Cells => _cells;
 
-    // Privat konstruktor som används av Singleton-mönstret för att skapa brädet
+    // Private constructor used by the Singleton pattern to create the board
     private Board(int rows, int columns, IShipPlacementStrategy shipPlacementStrategy)
     {
         _rows = rows;
@@ -182,9 +182,7 @@ public class Board
         _shipPlacementStrategy = shipPlacementStrategy;
     }
 
-    // Metod för att få en instans av brädet genom Singleton-mönstret
-    // Singleton-mönster
-
+    // Method to get an instance of the board using the Singleton pattern
     public static Board GetInstance(int rows, int columns, IShipPlacementStrategy shipPlacementStrategy)
     {
         if (_instance == null)
@@ -200,13 +198,13 @@ public class Board
         return _instance;
     }
 
-    // Lägger till en observatör till brädet
+    // Adds an observer to the board
     public void AddObserver(IObserver observer)
     {
         _observers.Add(observer);
     }
 
-    // Initierar brädet genom att skapa celler
+    // Initializes the board by creating cells
     public void Initialize()
     {
         for (int row = 0; row < _rows; row++)
@@ -218,13 +216,13 @@ public class Board
         }
     }
 
-    // Placerar skeppen på brädet med hjälp av den valda strategin
+    // Places the ships on the board using the selected strategy
     public void PlaceShips()
     {
         _shipPlacementStrategy.PlaceShips(this, _ships);
     }
 
-    // Kontrollerar om ett skepp kan placeras på givna koordinater och orientering
+    // Checks if a ship can be placed at the given coordinates and orientation
     public bool CanPlaceShip(Ship ship, int row, int column, bool isVertical)
     {
         if (isVertical && row + ship.Length > _rows)
@@ -253,7 +251,7 @@ public class Board
         return true;
     }
 
-    // Kontrollerar om användarens input för attack är giltig
+    // Checks if the user's attack input is valid
     public bool IsValidInput(string input)
     {
         if (input.Length < 2 || input.Length > 3)
@@ -280,7 +278,7 @@ public class Board
         return true;
     }
 
-    // Utför en attack baserat på användarens input och returnerar om attacken var en träff
+    // Performs an attack based on the user's input and returns whether the attack was a hit
     public bool Attack(string input)
     {
         char columnChar = input[0];
@@ -317,13 +315,13 @@ public class Board
         return false;
     }
 
-    // Kontrollerar om spelet är över
+    // Checks if the game is over
     public bool IsGameOver()
     {
         return _shipsSunk == _ships.Length;
     }
 
-    // Meddelar alla observatörer med ett meddelande
+    // Notifies all observers with a message
     public void NotifyObservers(string message)
     {
         foreach (var observer in _observers)
@@ -332,7 +330,7 @@ public class Board
         }
     }
 
-    // Skriver ut brädet till konsolen
+    // Prints the board to the console
     public void Print()
     {
         Console.WriteLine("  A B C D E F G");
