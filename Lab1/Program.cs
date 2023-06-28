@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+// Lab 1 - Erik Engvall NET 22
+
 // Singleton, Strategy, and Observer patterns
 
 // Define an interface for ship placement
